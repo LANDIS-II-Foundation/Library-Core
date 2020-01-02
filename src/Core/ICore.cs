@@ -1,10 +1,7 @@
-// Copyright 2005-2007 University of Wisconsin
-// Copyright 2010-2011 Portland State University
-//
 // Contributors:
 //   Jimm Domingo, UW-Madison, Forest Landscape Ecology Lab
 //   Srinivas S., Portland State University
-//   Robert Scheller, Portland State University
+//   Robert Scheller, North Carolina State University
 //   James Domingo, Green Code LLC
 
 using Landis.SpatialModeling;
