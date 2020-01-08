@@ -17,6 +17,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Landis.RasterIO" Version="2.0.0" />
+    <PackageReference Include="Landis.SpatialModeling" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Core\Landis.Core.csproj" />
   </ItemGroup>
 

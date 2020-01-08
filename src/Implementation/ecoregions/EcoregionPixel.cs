@@ -2,13 +2,21 @@ using Landis.SpatialModeling;
 
 namespace Landis.Ecoregions
 {
-    public class EcoregionPixel : Pixel
+    public class EcoregionPixel : SingleBandPixel<ushort>
     {
-        public Band<int> MapCode  = "The numeric code for each ecoregion";
 
-        public EcoregionPixel() 
+        //---------------------------------------------------------------------
+
+        public EcoregionPixel()
+            : base()
         {
-            SetBands(MapCode);
+        }
+
+        //---------------------------------------------------------------------
+
+        public EcoregionPixel(ushort band0)
+            : base(band0)
+        {
         }
     }
 }

@@ -8,6 +8,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
+using Landis.RasterIO;
 using Landis.SpatialModeling;
 
 using Troschuetz.Random;
@@ -25,7 +26,7 @@ namespace Landis
         private SiteVarRegistry siteVarRegistry;
         private ISpeciesDataset species;
         private IEcoregionDataset ecoregions;
-        private IConfigurableRasterFactory rasterFactory;
+        private IDriverManager rasterDriverManager;
         private ILandscapeFactory landscapeFactory;
         private ILandscape landscape;
         private float cellLength;  // meters
@@ -80,57 +81,38 @@ namespace Landis
         /// Initializes a new instance.
         /// </summary>
         public Model(IExtensionDataset extensionDataset,
-                     IConfigurableRasterFactory rasterFactory,
+                     IDriverManager rasterDriverManager,
                      ILandscapeFactory landscapeFactory)
 
         {
             this.extensionDataset = extensionDataset;
             siteVarRegistry = new SiteVarRegistry();
 
-            this.rasterFactory = rasterFactory;
+            this.rasterDriverManager = rasterDriverManager;
             this.landscapeFactory = landscapeFactory;
-
-            BindExtensionToFormat(".bin", "ENVI");
-            BindExtensionToFormat(".bmp", "BMP");
-            BindExtensionToFormat(".gis", "LAN");
-            BindExtensionToFormat(".img", "HFA");
-            BindExtensionToFormat(".tif", "GTiff");
-            BindExtensionToFormat(".ingr", "INGR");
-            BindExtensionToFormat(".vrt",  "VRT" );
  
             ui = null;
-        }
-
-        //---------------------------------------------------------------------
-
-        // Bind a file extension to a raster format if the format is supported
-        // by the raster factory.
-        private void BindExtensionToFormat(string fileExtension,
-                                           string formatCode)
-        {
-            RasterFormat rasterFormat = rasterFactory.GetFormat(formatCode);
-            if (rasterFormat != null)
-                rasterFactory.BindExtensionToFormat(fileExtension, rasterFormat);
         }
 
          //---------------------------------------------------------------------
 
         IInputRaster<TPixel> IRasterFactory.OpenRaster<TPixel>(string path)
         {
-            return rasterFactory.OpenRaster<TPixel>(path);
+            return rasterDriverManager.OpenRaster<TPixel>(path);
         }
 
         //---------------------------------------------------------------------
 
 
         IOutputRaster<TPixel> IRasterFactory.CreateRaster<TPixel>(string         path,
-                                                                  Dimensions dimensions)
+                                                                  Dimensions dimensions,
+                                                                  IMetadata metadata)
         {
             try {
                 string dir = System.IO.Path.GetDirectoryName(path);
                 if (dir.Length > 0)
                     Landis.Utilities.Directory.EnsureExists(dir);
-                return rasterFactory.CreateRaster<TPixel>(path, dimensions);
+                return rasterDriverManager.CreateRaster<TPixel>(path, dimensions, metadata);
             }
             catch (System.IO.IOException exc) {
                 string mesg = string.Format("Error opening map \"{0}\"", path);
@@ -299,7 +281,7 @@ namespace Landis
             ui.WriteLine("Initializing landscape from ecoregions map \"{0}\" ...", scenario.EcoregionsMap);
             Ecoregions.Map ecoregionsMap = new Ecoregions.Map(scenario.EcoregionsMap,
                                                               ecoregions,
-                                                              rasterFactory);
+                                                              rasterDriverManager);
             // -- ProcessMetadata(ecoregionsMap.Metadata, scenario);
             cellLength = scenario.CellLength.Value;
             cellArea = (float)((cellLength * cellLength) / 10000);
