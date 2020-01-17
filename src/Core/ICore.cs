@@ -86,6 +86,14 @@ namespace Landis.Core
             get;
         }
 
+        /// <summary>
+		/// The map metadata for the landscape.
+		/// </summary>
+		IMetadata LandscapeMapMetadata
+        {
+            get;
+        }
+
         //---------------------------------------------------------------------
 
         /// <summary>

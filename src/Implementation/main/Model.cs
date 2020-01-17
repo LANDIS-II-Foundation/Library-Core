@@ -1,3 +1,4 @@
+using Gov.Fgdc.Csdgm;
 using Landis.Utilities;
 //using Flel = Landis.Utilities;
 using Loader = Landis.Utilities.PlugIns.Loader;
@@ -29,6 +30,7 @@ namespace Landis
         private IDriverManager rasterDriverManager;
         private ILandscapeFactory landscapeFactory;
         private ILandscape landscape;
+        private IMetadata landscapeMapMetadata;
         private float cellLength;  // meters
         private float cellArea;    // hectares
         private ISiteVar<IEcoregion> ecoregionSiteVar;
@@ -186,6 +188,14 @@ namespace Landis
             }
         }
 
+        IMetadata ICore.LandscapeMapMetadata
+        {
+            get
+            {
+                return landscapeMapMetadata;
+            }
+        }
+
         //---------------------------------------------------------------------
 
         float ICore.CellLength
@@ -282,10 +292,7 @@ namespace Landis
             Ecoregions.Map ecoregionsMap = new Ecoregions.Map(scenario.EcoregionsMap,
                                                               ecoregions,
                                                               rasterDriverManager);
-            // -- ProcessMetadata(ecoregionsMap.Metadata, scenario);
-            cellLength = scenario.CellLength.Value;
-            cellArea = (float)((cellLength * cellLength) / 10000);
-            ui.WriteLine("Cell length = {0} m, cell area = {1} ha", cellLength, cellArea);
+            ProcessMetadata(ecoregionsMap.Metadata, scenario);
 
             using (IInputGrid<bool> grid = ecoregionsMap.OpenAsInputGrid()) {
                 ui.WriteLine("Map dimensions: {0} = {1:#,##0} cell{2}", grid.Dimensions,
@@ -446,6 +453,123 @@ namespace Landis
         //---------------------------------------------------------------------
 
         private const string cellLengthExceptionPrefix = "Cell Length Exception: ";
+
+        //---------------------------------------------------------------------
+
+        private void ProcessMetadata(IMetadata metadata,
+                                 Scenario scenario)
+        {
+            landscapeMapMetadata = metadata;
+
+            string warning = "";
+            float? mapCellLength = null;
+            string mapCellLengthStr = "";
+            try
+            {
+                mapCellLength = GetCellLength(metadata, ref mapCellLengthStr);
+            }
+            catch (ApplicationException exc)
+            {
+                string message = exc.Message;
+                if (!message.StartsWith(cellLengthExceptionPrefix))
+                    throw;
+                message = message.Replace(cellLengthExceptionPrefix, "");
+                if (scenario.CellLength.HasValue)
+                    warning = message;
+                else
+                    throw new ApplicationException("Error: " + message);
+            }
+
+            if (scenario.CellLength.HasValue)
+            {
+                cellLength = scenario.CellLength.Value;
+                ui.WriteLine("Cell length: {0} meters", cellLength);
+                if (mapCellLength.HasValue)
+                {
+                    if (cellLength == mapCellLength.Value)
+                        ui.WriteLine("Cell length in map: {0}", mapCellLengthStr);
+                    else
+                        ui.WriteLine("Warning: Cell length in map: {0}", mapCellLengthStr);
+                }
+                else
+                {
+                    if (warning.Length > 0)
+                        ui.WriteLine("Warning: {0}", warning);
+                    else
+                        ui.WriteLine("Map has no cell length");
+                }
+            }
+            else
+            {
+                //    No CellLength parameter in scenario file
+                if (mapCellLength.HasValue)
+                {
+                    ui.WriteLine("Cell length in map: {0}", mapCellLengthStr);
+                    cellLength = mapCellLength.Value;
+                }
+                else
+                {
+                    string[] message = new string[] {
+                        "Error: Ecoregion map doesn't have cell dimensions; therefore, the",
+                        "       CellLength parameter must be in the scenario file."
+                    };
+                    throw new MultiLineException(message);
+                }
+            }
+
+            cellArea = (float)((cellLength * cellLength) / 10000);
+        }
+
+        private float? GetCellLength(IMetadata metadata,
+                                     ref string cellLengthStr)
+        {
+            float mapCellLength = 0;
+
+            float cellWidth = 0;
+            bool hasCellWidth = metadata.TryGetValue(AbscissaResolution.Name,
+                                                     ref cellWidth);
+            float cellHeight = 0;
+            bool hasCellHeight = metadata.TryGetValue(OrdinateResolution.Name,
+                                                      ref cellHeight);
+            if (hasCellWidth && hasCellHeight)
+            {
+                if (cellWidth != cellHeight)
+                    throw CellLengthException("Cell width ({0}) in map is not = to cell height ({1})",
+                                              cellWidth, cellHeight);
+                if (cellWidth <= 0.0)
+                    throw CellLengthException("Cell width ({0}) in map is not > 0",
+                                              cellWidth);
+
+                string units = null;
+                if (!metadata.TryGetValue(PlanarDistanceUnits.Name, ref units))
+                {
+                    ui.WriteLine("Map doesn't have units for cell dimensions; assuming meters");
+                    units = PlanarDistanceUnits.Meters;
+                }
+                if (units == PlanarDistanceUnits.Meters)
+                    mapCellLength = cellWidth;
+                else if (units == PlanarDistanceUnits.InternationalFeet)
+                    mapCellLength = (float)(cellWidth * 0.3048);
+                else if (units == PlanarDistanceUnits.SurveyFeet)
+                    mapCellLength = (float)(cellWidth * (1200.0 / 3937));
+                else
+                    throw CellLengthException("Map has unknown units for cell dimensions: {0}",
+                                              units);
+                cellLengthStr = string.Format("{0} meters{1}", mapCellLength,
+                                              (units == PlanarDistanceUnits.Meters) ? ""
+                                                                                     : string.Format(" ({0} {1})", cellWidth, units));
+                return mapCellLength;
+            }
+            else if (hasCellWidth && !hasCellHeight)
+            {
+                throw CellLengthException("Map has cell width (x-dimension) but no height (y-dimension).");
+            }
+            else if (!hasCellWidth && hasCellHeight)
+            {
+                throw CellLengthException("Map has cell height (y-dimension) but no width (x-dimension).");
+            }
+            return null;
+        }
 
         //---------------------------------------------------------------------
 
