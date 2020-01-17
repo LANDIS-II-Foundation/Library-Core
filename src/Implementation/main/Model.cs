@@ -1,3 +1,4 @@
+using Gov.Fgdc.Csdgm;
 using Landis.Utilities;
 //using Flel = Landis.Utilities;
 using Loader = Landis.Utilities.PlugIns.Loader;
@@ -8,6 +9,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
+using Landis.RasterIO;
 using Landis.SpatialModeling;
 
 using Troschuetz.Random;
@@ -25,9 +27,10 @@ namespace Landis
         private SiteVarRegistry siteVarRegistry;
         private ISpeciesDataset species;
         private IEcoregionDataset ecoregions;
-        private IConfigurableRasterFactory rasterFactory;
+        private IDriverManager rasterDriverManager;
         private ILandscapeFactory landscapeFactory;
         private ILandscape landscape;
+        private IMetadata landscapeMapMetadata;
         private float cellLength;  // meters
         private float cellArea;    // hectares
         private ISiteVar<IEcoregion> ecoregionSiteVar;
@@ -80,57 +83,38 @@ namespace Landis
         /// Initializes a new instance.
         /// </summary>
         public Model(IExtensionDataset extensionDataset,
-                     IConfigurableRasterFactory rasterFactory,
+                     IDriverManager rasterDriverManager,
                      ILandscapeFactory landscapeFactory)
 
         {
             this.extensionDataset = extensionDataset;
             siteVarRegistry = new SiteVarRegistry();
 
-            this.rasterFactory = rasterFactory;
+            this.rasterDriverManager = rasterDriverManager;
             this.landscapeFactory = landscapeFactory;
-
-            BindExtensionToFormat(".bin", "ENVI");
-            BindExtensionToFormat(".bmp", "BMP");
-            BindExtensionToFormat(".gis", "LAN");
-            BindExtensionToFormat(".img", "HFA");
-            BindExtensionToFormat(".tif", "GTiff");
-            BindExtensionToFormat(".ingr", "INGR");
-            BindExtensionToFormat(".vrt",  "VRT" );
  
             ui = null;
-        }
-
-        //---------------------------------------------------------------------
-
-        // Bind a file extension to a raster format if the format is supported
-        // by the raster factory.
-        private void BindExtensionToFormat(string fileExtension,
-                                           string formatCode)
-        {
-            RasterFormat rasterFormat = rasterFactory.GetFormat(formatCode);
-            if (rasterFormat != null)
-                rasterFactory.BindExtensionToFormat(fileExtension, rasterFormat);
         }
 
          //---------------------------------------------------------------------
 
         IInputRaster<TPixel> IRasterFactory.OpenRaster<TPixel>(string path)
         {
-            return rasterFactory.OpenRaster<TPixel>(path);
+            return rasterDriverManager.OpenRaster<TPixel>(path);
         }
 
         //---------------------------------------------------------------------
 
 
         IOutputRaster<TPixel> IRasterFactory.CreateRaster<TPixel>(string         path,
-                                                                  Dimensions dimensions)
+                                                                  Dimensions dimensions,
+                                                                  IMetadata metadata)
         {
             try {
                 string dir = System.IO.Path.GetDirectoryName(path);
                 if (dir.Length > 0)
                     Landis.Utilities.Directory.EnsureExists(dir);
-                return rasterFactory.CreateRaster<TPixel>(path, dimensions);
+                return rasterDriverManager.CreateRaster<TPixel>(path, dimensions, metadata);
             }
             catch (System.IO.IOException exc) {
                 string mesg = string.Format("Error opening map \"{0}\"", path);
@@ -201,6 +185,14 @@ namespace Landis
         {
             get {
                 return landscape;
+            }
+        }
+
+        IMetadata ICore.LandscapeMapMetadata
+        {
+            get
+            {
+                return landscapeMapMetadata;
             }
         }
 
@@ -299,11 +291,8 @@ namespace Landis
             ui.WriteLine("Initializing landscape from ecoregions map \"{0}\" ...", scenario.EcoregionsMap);
             Ecoregions.Map ecoregionsMap = new Ecoregions.Map(scenario.EcoregionsMap,
                                                               ecoregions,
-                                                              rasterFactory);
-            // -- ProcessMetadata(ecoregionsMap.Metadata, scenario);
-            cellLength = scenario.CellLength.Value;
-            cellArea = (float)((cellLength * cellLength) / 10000);
-            ui.WriteLine("Cell length = {0} m, cell area = {1} ha", cellLength, cellArea);
+                                                              rasterDriverManager);
+            ProcessMetadata(ecoregionsMap.Metadata, scenario);
 
             using (IInputGrid<bool> grid = ecoregionsMap.OpenAsInputGrid()) {
                 ui.WriteLine("Map dimensions: {0} = {1:#,##0} cell{2}", grid.Dimensions,
@@ -464,6 +453,123 @@ namespace Landis
         //---------------------------------------------------------------------
 
         private const string cellLengthExceptionPrefix = "Cell Length Exception: ";
+
+        //---------------------------------------------------------------------
+
+        private void ProcessMetadata(IMetadata metadata,
+                                 Scenario scenario)
+        {
+            landscapeMapMetadata = metadata;
+
+            string warning = "";
+            float? mapCellLength = null;
+            string mapCellLengthStr = "";
+            try
+            {
+                mapCellLength = GetCellLength(metadata, ref mapCellLengthStr);
+            }
+            catch (ApplicationException exc)
+            {
+                string message = exc.Message;
+                if (!message.StartsWith(cellLengthExceptionPrefix))
+                    throw;
+                message = message.Replace(cellLengthExceptionPrefix, "");
+                if (scenario.CellLength.HasValue)
+                    warning = message;
+                else
+                    throw new ApplicationException("Error: " + message);
+            }
+
+            if (scenario.CellLength.HasValue)
+            {
+                cellLength = scenario.CellLength.Value;
+                ui.WriteLine("Cell length: {0} meters", cellLength);
+                if (mapCellLength.HasValue)
+                {
+                    if (cellLength == mapCellLength.Value)
+                        ui.WriteLine("Cell length in map: {0}", mapCellLengthStr);
+                    else
+                        ui.WriteLine("Warning: Cell length in map: {0}", mapCellLengthStr);
+                }
+                else
+                {
+                    if (warning.Length > 0)
+                        ui.WriteLine("Warning: {0}", warning);
+                    else
+                        ui.WriteLine("Map has no cell length");
+                }
+            }
+            else
+            {
+                //    No CellLength parameter in scenario file
+                if (mapCellLength.HasValue)
+                {
+                    ui.WriteLine("Cell length in map: {0}", mapCellLengthStr);
+                    cellLength = mapCellLength.Value;
+                }
+                else
+                {
+                    string[] message = new string[] {
+                        "Error: Ecoregion map doesn't have cell dimensions; therefore, the",
+                        "       CellLength parameter must be in the scenario file."
+                    };
+                    throw new MultiLineException(message);
+                }
+            }
+
+            cellArea = (float)((cellLength * cellLength) / 10000);
+        }
+
+        private float? GetCellLength(IMetadata metadata,
+                                     ref string cellLengthStr)
+        {
+            float mapCellLength = 0;
+
+            float cellWidth = 0;
+            bool hasCellWidth = metadata.TryGetValue(AbscissaResolution.Name,
+                                                     ref cellWidth);
+            float cellHeight = 0;
+            bool hasCellHeight = metadata.TryGetValue(OrdinateResolution.Name,
+                                                      ref cellHeight);
+            if (hasCellWidth && hasCellHeight)
+            {
+                if (cellWidth != cellHeight)
+                    throw CellLengthException("Cell width ({0}) in map is not = to cell height ({1})",
+                                              cellWidth, cellHeight);
+                if (cellWidth <= 0.0)
+                    throw CellLengthException("Cell width ({0}) in map is not > 0",
+                                              cellWidth);
+
+                string units = null;
+                if (!metadata.TryGetValue(PlanarDistanceUnits.Name, ref units))
+                {
+                    ui.WriteLine("Map doesn't have units for cell dimensions; assuming meters");
+                    units = PlanarDistanceUnits.Meters;
+                }
+                if (units == PlanarDistanceUnits.Meters)
+                    mapCellLength = cellWidth;
+                else if (units == PlanarDistanceUnits.InternationalFeet)
+                    mapCellLength = (float)(cellWidth * 0.3048);
+                else if (units == PlanarDistanceUnits.SurveyFeet)
+                    mapCellLength = (float)(cellWidth * (1200.0 / 3937));
+                else
+                    throw CellLengthException("Map has unknown units for cell dimensions: {0}",
+                                              units);
+                cellLengthStr = string.Format("{0} meters{1}", mapCellLength,
+                                              (units == PlanarDistanceUnits.Meters) ? ""
+                                                                                     : string.Format(" ({0} {1})", cellWidth, units));
+                return mapCellLength;
+            }
+            else if (hasCellWidth && !hasCellHeight)
+            {
+                throw CellLengthException("Map has cell width (x-dimension) but no height (y-dimension).");
+            }
+            else if (!hasCellWidth && hasCellHeight)
+            {
+                throw CellLengthException("Map has cell height (y-dimension) but no width (x-dimension).");
+            }
+            return null;
+        }
 
         //---------------------------------------------------------------------
 

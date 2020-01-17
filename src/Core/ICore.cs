@@ -4,6 +4,7 @@
 //   Robert Scheller, North Carolina State University
 //   James Domingo, Green Code LLC
 
+using Landis.RasterIO;
 using Landis.SpatialModeling;
 using System.IO;
 using System.Collections.Generic;
@@ -78,6 +79,14 @@ namespace Landis.Core
         /// The landscape for the scenario.
         /// </summary>
         ILandscape Landscape
+        {
+            get;
+        }
+
+        /// <summary>
+		/// The map metadata for the landscape.
+		/// </summary>
+		IMetadata LandscapeMapMetadata
         {
             get;
         }
