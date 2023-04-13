@@ -28,6 +28,7 @@ namespace Landis
         private IConfigurableRasterFactory rasterFactory;
         private ILandscapeFactory landscapeFactory;
         private ILandscape landscape;
+        private string version;
         private float cellLength;  // meters
         private float cellArea;    // hectares
         private ISiteVar<IEcoregion> ecoregionSiteVar;
@@ -81,7 +82,8 @@ namespace Landis
         /// </summary>
         public Model(IExtensionDataset extensionDataset,
                      IConfigurableRasterFactory rasterFactory,
-                     ILandscapeFactory landscapeFactory)
+                     ILandscapeFactory landscapeFactory,
+                     string version)
 
         {
             this.extensionDataset = extensionDataset;
@@ -89,6 +91,7 @@ namespace Landis
 
             this.rasterFactory = rasterFactory;
             this.landscapeFactory = landscapeFactory;
+            this.version = version;
 
             BindExtensionToFormat(".bin", "ENVI");
             BindExtensionToFormat(".bmp", "BMP");
@@ -97,6 +100,7 @@ namespace Landis
             BindExtensionToFormat(".tif", "GTiff");
             BindExtensionToFormat(".ingr", "INGR");
             BindExtensionToFormat(".vrt",  "VRT" );
+            
  
             ui = null;
         }
@@ -206,6 +210,16 @@ namespace Landis
 
         //---------------------------------------------------------------------
 
+        string ICore.Version
+        {
+            get
+            {
+                return version;
+            }
+        }
+
+        //---------------------------------------------------------------------
+
         float ICore.CellLength
         {
             get {
@@ -295,6 +309,7 @@ namespace Landis
 
             LoadSpecies(scenario.Species);
             LoadEcoregions(scenario.Ecoregions);
+            CoreMetadataHandler.InitializeMetadata(this.version, scenario, ui);
             
             ui.WriteLine("Initializing landscape from ecoregions map \"{0}\" ...", scenario.EcoregionsMap);
             Ecoregions.Map ecoregionsMap = new Ecoregions.Map(scenario.EcoregionsMap,

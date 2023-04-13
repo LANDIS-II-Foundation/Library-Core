@@ -11,13 +11,19 @@
     <RepositoryType>git</RepositoryType>
     <PackageTags>LANDIS-II;Landis;Core implementation</PackageTags>
     <NeutralLanguage>English</NeutralLanguage>
-    <Version>2.0.0</Version>
+    <Version>3.0.0</Version>
     <AssemblyVersion>2.0.0.0</AssemblyVersion>
     <FileVersion>7.0.0.0</FileVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Core\Landis.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Landis.Library.Metadata-v2">
+      <HintPath>lib\Landis.Library.Metadata-v2.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
 </Project>

@@ -7,6 +7,7 @@ namespace Landis.Core
         : Landis.Utilities.PlugIns.Info
     {
         ExtensionType type;
+        string version;
 
         //---------------------------------------------------------------------
 
@@ -19,10 +20,12 @@ namespace Landis.Core
         /// extension's main class (dervied from ExtensionMain).</param>
         public ExtensionInfo(string        name,
                              ExtensionType type,
-                             string        mainClass)
+                             string        mainClass,
+                             string version)
             : base(name, typeof(ExtensionMain), mainClass)
         {
             this.type = type;
+            this.version = version;
         }
 
         //---------------------------------------------------------------------
@@ -34,6 +37,14 @@ namespace Landis.Core
         {
             get {
                 return type;
+            }
+        }
+
+        public string Version
+        {
+            get
+            {
+                return version;
             }
         }
     }
