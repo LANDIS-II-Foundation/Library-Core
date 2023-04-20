@@ -17,6 +17,13 @@ namespace Landis
 
         public static CoreMetadata coreMetadata { get; set; }
 
+        private static string log;
+
+        public static string Log
+        {
+            get { return log; }
+        }
+
         public static void InitializeMetadata(string coreVersion, Scenario scenario, IUserInterface ui)
         {
             List<string> coreInputs = GetCoreInputs(scenario);
@@ -27,8 +34,33 @@ namespace Landis
             //---------------------------------------
             MetadataProvider mp = new MetadataProvider(coreMetadata);
             mp.WriteMetadataToXMLFile("Metadata", "LANDIS-II v" + coreMetadata.Version, "LANDIS-II v" + coreMetadata.Version);
+            CreateLog(coreVersion, scenario);
 
-            WriteMetadataToLog(ui);
+            ui.WriteLine("Core metadata:");
+            ui.WriteLine(Log);
+        }
+
+        private static void CreateLog(string coreVersion, Scenario scenario)
+        {
+            log = string.Empty;
+
+            log += "LANDIS-II v" + coreVersion + ", Seed: " + scenario.RandomNumberSeed + ", ";
+            log += scenario.EcoregionsMap + ", " + scenario.Ecoregions + ", " + scenario.Species + System.Environment.NewLine;
+
+            log += "Succession:" + System.Environment.NewLine +  scenario.Succession.Info.Name + " Version: " + scenario.Succession.Info.Version + ", Input: " + scenario.Succession.InitFile + System.Environment.NewLine;
+            log += "Disturbance Extensions:" + System.Environment.NewLine;
+
+            foreach (var extension in scenario.Disturbances)
+            {
+                log += extension.Info.Name + " Version: " + extension.Info.Version + ", Input: " + extension.InitFile + System.Environment.NewLine;
+            }
+
+            log += "Other Extensions:" + System.Environment.NewLine;
+
+            foreach (var extension in scenario.OtherExtensions)
+            {
+                log += extension.Info.Name + " Version: " + extension.Info.Version + ", Input: " + extension.InitFile + System.Environment.NewLine;
+            }
         }
 
         private static void WriteMetadataToLog(IUserInterface ui)
@@ -46,6 +78,7 @@ namespace Landis
             inputs.Add(scenario.EcoregionsMap);
             inputs.Add(scenario.Ecoregions);
             inputs.Add(scenario.Species);
+
             return inputs;
         }
 
@@ -54,6 +87,8 @@ namespace Landis
             List<CoreExtensionMetadata> metadata = new List<CoreExtensionMetadata>();
 
             metadata.Add(new CoreExtensionMetadata(scenario.Succession.Info.Name, scenario.Succession.Info.Version, new List<string>() { scenario.Succession.InitFile }));
+
+            
 
             foreach(var extension in scenario.Disturbances)
             {
