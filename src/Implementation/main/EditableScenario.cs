@@ -20,6 +20,9 @@ namespace Landis
         private EditableExtensionList otherExtensions;
         private InputValue<bool> disturbRandom;
         private InputValue<uint> seed;
+        private InputValue<string> externalScriptPath;
+        private InputValue<string> externalScriptExecutable;
+        private InputValue<string> externalScriptCommand;
 
         //---------------------------------------------------------------------
 
@@ -238,6 +241,51 @@ namespace Landis
             }
         }
 
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public InputValue<string> ExternalScript
+        {
+            get
+            {
+                return externalScriptPath;
+            }
+            set
+            {
+                externalScriptPath = value;
+            }
+        }
+
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public InputValue<string> ExternalExecutable
+        {
+            get
+            {
+                return externalScriptExecutable;
+            }
+            set
+            {
+                externalScriptExecutable = value;
+            }
+        }
+
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public InputValue<string> ExternalCommand
+        {
+            get
+            {
+                return externalScriptCommand;
+            }
+            set
+            {
+                externalScriptCommand = value;
+            }
+        }
+
         //---------------------------------------------------------------------
 
         public EditableScenario()
@@ -288,7 +336,10 @@ namespace Landis
                                                           : disturbRandom.Actual,
                                     otherExtensions.GetComplete(),
                                     seed == null ? (uint?) null
-                                                 : seed.Actual);
+                                                 : seed.Actual,
+                                    externalScriptPath == null ? null: externalScriptPath.Actual,
+                                    externalScriptExecutable == null ? null : externalScriptExecutable.Actual,
+                                    externalScriptCommand == null ? null : externalScriptCommand.Actual);
             }
             else
                 return null;

@@ -39,6 +39,7 @@ namespace Landis
         private SuccessionMain succession;
         private List<ExtensionMain> disturbAndOtherExtensions;
         private IUserInterface ui;
+        private Pause pause;
 
         private static IGenerator RandomNumberGenerator;
         private static BetaDistribution betaDist;
@@ -99,8 +100,7 @@ namespace Landis
             BindExtensionToFormat(".img", "HFA");
             BindExtensionToFormat(".tif", "GTiff");
             BindExtensionToFormat(".ingr", "INGR");
-            BindExtensionToFormat(".vrt",  "VRT" );
-            
+            BindExtensionToFormat(".vrt",  "VRT" );           
  
             ui = null;
         }
@@ -310,7 +310,14 @@ namespace Landis
             LoadSpecies(scenario.Species);
             LoadEcoregions(scenario.Ecoregions);
             CoreMetadataHandler.InitializeMetadata(this.version, scenario, ui);
-            
+
+            pause = new Pause(scenario.ExternalScript, scenario.ExternalExecutable, scenario.ExternalCommand, this);
+            if (!pause.UsePause)
+            {
+                Console.WriteLine("No pause processes specified, continuing normally");
+                pause = null;
+            }
+
             ui.WriteLine("Initializing landscape from ecoregions map \"{0}\" ...", scenario.EcoregionsMap);
             Ecoregions.Map ecoregionsMap = new Ecoregions.Map(scenario.EcoregionsMap,
                                                               ecoregions,
@@ -371,6 +378,11 @@ namespace Landis
                 for (currentTime++, timeSinceStart++;
                      currentTime <= endTime;
                      currentTime++, timeSinceStart++) {
+
+                    if (pause != null && currentTime >= 1)
+                    {
+                        pause.PauseTimestep();
+                    }
 
                     bool isSuccTimestep = IsExtensionTimestep(succession);
 

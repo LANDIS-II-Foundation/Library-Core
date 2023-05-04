@@ -16,6 +16,9 @@ namespace Landis
         private bool disturbRandom;
         private ExtensionAndInitFile[] otherExtensions;
         private uint? seed;
+        public string externalScriptPath;
+        public string externalScriptExecutable;
+        public string externalScriptCommand;
 
         //---------------------------------------------------------------------
 
@@ -152,6 +155,39 @@ namespace Landis
             }
         }
 
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public string ExternalScript
+        {
+            get
+            {
+                return externalScriptPath;
+            }
+        }
+
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public string ExternalExecutable
+        {
+            get
+            {
+                return externalScriptExecutable;
+            }
+        }
+
+        /// <summary>
+        /// Path to the external script used during LANDIS Pause functionality
+        /// </summary>
+        public string ExternalCommand
+        {
+            get
+            {
+                return externalScriptCommand;
+            }
+        }
+
         //---------------------------------------------------------------------
 
         public Scenario(int                    startTime,
@@ -164,7 +200,10 @@ namespace Landis
                         ExtensionAndInitFile[] disturbances,
                         bool                   disturbRandom,
                         ExtensionAndInitFile[] otherExtensions,
-                        uint?                  seed)
+                        uint?                  seed,
+                        string externalScriptPath = null, 
+                        string externalScriptExecutable = null,
+                        string externalScriptCommand = null)
         {
             this.startTime       = startTime;
             this.endTime         = endTime;
@@ -177,6 +216,9 @@ namespace Landis
             this.disturbRandom   = disturbRandom;
             this.otherExtensions = otherExtensions;
             this.seed            = seed;
+            this.externalScriptPath = externalScriptPath;
+            this.externalScriptExecutable = externalScriptExecutable;
+            this.externalScriptCommand = externalScriptCommand;
         }
     }
 }

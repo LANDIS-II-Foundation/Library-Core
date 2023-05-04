@@ -69,6 +69,25 @@ namespace Landis
                 scenario.CellLength = cellLength.Value;
             }
 
+            InputVar<string> pauseScript = new InputVar<string>("ExternalScript");
+            if (ReadOptionalVar(pauseScript))
+                scenario.ExternalScript = pauseScript.Value;
+            else
+                scenario.ExternalScript = null;
+
+            InputVar<string> pauseEngine = new InputVar<string>("ExternalExecutable");
+            if (ReadOptionalVar(pauseEngine))
+                scenario.ExternalExecutable = pauseEngine.Value;
+            else
+                scenario.ExternalExecutable = null;
+
+            //Adding parse for script engine location, script name, script command line input
+            InputVar<string> pauseCommand = new InputVar<string>("ExternalCommand");
+            if (ReadOptionalVar(pauseCommand))
+                scenario.ExternalCommand = pauseCommand.Value;
+            else
+                scenario.ExternalCommand = null;
+
             //  Table of extensions
             nameLineNumbers.Clear();  // if Parse called more than once
 
