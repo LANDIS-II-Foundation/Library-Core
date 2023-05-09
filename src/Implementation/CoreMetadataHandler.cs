@@ -29,7 +29,7 @@ namespace Landis
             List<string> coreInputs = GetCoreInputs(scenario);
             List<CoreExtensionMetadata> data = GetMetadataFromScenario(scenario);
 
-            coreMetadata = new CoreMetadata(coreVersion, (uint)scenario.RandomNumberSeed, scenario.StartTime, scenario.EndTime, data, coreInputs);
+            coreMetadata = new CoreMetadata(coreVersion, scenario.RandomNumberSeed, scenario.StartTime, scenario.EndTime, data, coreInputs);
 
             //---------------------------------------
             MetadataProvider mp = new MetadataProvider(coreMetadata);
