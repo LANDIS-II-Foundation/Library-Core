@@ -16,11 +16,11 @@ namespace Landis.Core
         public bool UsePause { get; private set; }
         private bool useScript = false;
         private bool useShell = false;
-        private ICore Model { get; set; }
+        private static ICore Model { get; set; }
 
         public Pause(string script, string engine, string command, ICore model)
         {
-            this.Model = model;
+            Model = model;
             ExternalScript = script;
             ExternalExecutable = engine;
             ExternalCommand = command;
@@ -62,7 +62,6 @@ namespace Landis.Core
             {
                 pause_process = CallExternalExecutable();
                 pause_process.WaitForExit();
-                Model.UI.WriteLine(pause_process.StandardOutput.ReadToEnd());
                 pause_process.Close();
             }
         }
@@ -73,15 +72,21 @@ namespace Landis.Core
             Model.UI.WriteLine("Starting external shell...");
             Process shell_process = new Process();
 
-            shell_process.StartInfo.UseShellExecute = true;
+            shell_process.StartInfo.UseShellExecute = false;
             shell_process.StartInfo.CreateNoWindow = true;
             shell_process.StartInfo.FileName = "CMD.exe";
             shell_process.StartInfo.Arguments = "/C " + ExternalCommand;
-            shell_process.StartInfo.RedirectStandardOutput = false;
+            shell_process.StartInfo.RedirectStandardOutput = true;
+            shell_process.StartInfo.RedirectStandardError = true;
+            shell_process.StartInfo.CreateNoWindow = true;
+            shell_process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+            shell_process.ErrorDataReceived += new DataReceivedEventHandler(OutputHandler);
 
             try
             {
-                shell_process.Start(); // start the process 
+                shell_process.Start(); // start the process
+                shell_process.BeginOutputReadLine();
+                shell_process.BeginErrorReadLine();
             }
             catch (Win32Exception w)
             {
@@ -108,10 +113,15 @@ namespace Landis.Core
             external_process.StartInfo.CreateNoWindow = true;
             external_process.StartInfo.Arguments = ExternalScript;
             external_process.StartInfo.RedirectStandardOutput = true;
+            external_process.StartInfo.RedirectStandardError = true;
+            external_process.OutputDataReceived += new DataReceivedEventHandler(OutputHandler);
+            external_process.ErrorDataReceived += new DataReceivedEventHandler(OutputHandler);
 
             try
             {
                 external_process.Start(); // start the process (the python program)
+                external_process.BeginOutputReadLine();
+                external_process.BeginErrorReadLine();
             }
             catch (Win32Exception w)
             {
@@ -133,6 +143,11 @@ namespace Landis.Core
             Model.UI.WriteLine("External script path: " + ExternalScript);
             Model.UI.WriteLine("External script executable: " + ExternalExecutable);
             Model.UI.WriteLine("External command to execute: " + ExternalCommand);
+        }
+
+        static void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine)
+        {
+            Model.UI.WriteLine(outLine.Data);
         }
     }
 }
