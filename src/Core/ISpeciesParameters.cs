@@ -16,6 +16,16 @@ namespace Landis.Core
         //---------------------------------------------------------------------
 
         /// <summary>
+        /// Full Species name
+        /// </summary>
+        string FullName
+        {
+            get;
+        }
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
         /// Longevity (years)
         /// </summary>
         int Longevity

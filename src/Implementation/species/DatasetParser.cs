@@ -2,6 +2,7 @@ using Landis.Utilities;
 using System.Collections.Generic;
 
 using Landis.Core;
+using System;
 
 namespace Landis.Species
 {
@@ -41,6 +42,7 @@ namespace Landis.Species
             Dictionary <string, int> lineNumbers = new Dictionary<string, int>();
 
             InputVar<string> name = new InputVar<string>("Name");
+            InputVar<string> fullName = new InputVar<string>("Full Name");
             InputVar<int> longevity = new InputVar<int>("Longevity");
             InputVar<int> maturity = new InputVar<int>("Sexual Maturity");
             InputVar<byte> shadeTolerance = new InputVar<byte>("Shade Tolerance");
@@ -99,12 +101,44 @@ namespace Landis.Species
                 ReadValue(postFireRegen, currentLine);
                 parameters.PostFireRegeneration = postFireRegen.Value;
 
-                CheckNoDataAfter("the " + postFireRegen.Name + " column",
+                if (currentLine.Index != -1)
+                {
+                    if (ReadOptionalWord(currentLine, fullName))
+                    {
+                        parameters.FullName = fullName.Value;
+
+                        // If adding another optional parameter, move this bottom code out to the next one
+                        CheckNoDataAfter("the " + fullName.Name + " column",
+                                     currentLine);
+                    }
+                }
+                else
+                {
+                    CheckNoDataAfter("the " + postFireRegen.Name + " column",
                                  currentLine);
+                }
+
                 GetNextLine();
             }
 
             return dataset.GetComplete();
+        }
+
+        private bool ReadOptionalWord(StringReader currentLine, InputVar<string> var)
+        {
+            int i = 0;
+            while ((char)currentLine.Peek() != ushort.MaxValue && i != -1 && char.IsWhiteSpace((char)currentLine.Peek()))
+            {
+                i = currentLine.Read();
+            }
+
+            if ((char)currentLine.Peek() == ushort.MaxValue || i == -1)
+            {
+                return false;
+            }
+            var.ReadValue(currentLine);
+
+            return !string.IsNullOrEmpty(var.Value.Actual);
         }
     }
 }

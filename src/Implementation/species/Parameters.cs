@@ -10,6 +10,7 @@ namespace Landis.Species
         : ISpeciesParameters
     {
         private string name;
+        private string fullName;
         private int longevity;
         private int maturity;
         private byte shadeTolerance;
@@ -27,6 +28,16 @@ namespace Landis.Species
         {
             get {
                 return name;
+            }
+        }
+
+        //---------------------------------------------------------------------
+
+        public string FullName
+        {
+            get
+            {
+                return fullName;
             }
         }
 
@@ -123,6 +134,7 @@ namespace Landis.Species
         //---------------------------------------------------------------------
 
         public Parameters(string name,
+                          string fullName,
                           int longevity,
                           int maturity,
                           byte shadeTolerance,
@@ -135,6 +147,7 @@ namespace Landis.Species
                           PostFireRegeneration postFireRegen)
         {
             this.name              = name;
+            this.fullName          = fullName;
             this.longevity         = longevity;
             this.maturity          = maturity;
             this.shadeTolerance    = shadeTolerance;
@@ -152,6 +165,7 @@ namespace Landis.Species
         public Parameters(ISpeciesParameters parameters)
         {
             name              = parameters.Name;
+            fullName          = string.IsNullOrEmpty(parameters.FullName) ? parameters.Name : parameters.FullName;
             longevity         = parameters.Longevity;
             maturity          = parameters.Maturity;
             shadeTolerance    = parameters.ShadeTolerance;

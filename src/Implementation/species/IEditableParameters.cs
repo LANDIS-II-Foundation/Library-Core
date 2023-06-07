@@ -22,6 +22,17 @@ namespace Landis.Species
         //---------------------------------------------------------------------
 
         /// <summary>
+        /// Full species name
+        /// </summary>
+        InputValue<string> FullName
+        {
+            get;
+            set;
+        }
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
         /// Longevity (years)
         /// </summary>
         InputValue<int> Longevity

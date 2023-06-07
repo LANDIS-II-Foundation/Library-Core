@@ -11,6 +11,7 @@ namespace Landis.Species
         : IEditableParameters
     {
         private InputValue<string> name;
+        private InputValue<string> fullName;
         private InputValue<int> longevity;
         private InputValue<int> maturity;
         private InputValue<byte> shadeTolerance;
@@ -35,6 +36,24 @@ namespace Landis.Species
 
             set {
                 name = value;
+            }
+        }
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
+        /// Full Species Name
+        /// </summary>
+        public InputValue<string> FullName
+        {
+            get
+            {
+                return fullName;
+            }
+
+            set
+            {
+                fullName = value;
             }
         }
 
@@ -321,6 +340,7 @@ namespace Landis.Species
         {
             if (this.IsComplete)
                 return new Parameters(name.Actual,
+                                      fullName == null ? name.Actual : fullName.Actual,
                                       longevity.Actual,
                                       maturity.Actual,
                                       shadeTolerance.Actual,
