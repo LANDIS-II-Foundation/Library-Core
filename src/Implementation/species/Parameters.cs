@@ -13,8 +13,6 @@ namespace Landis.Species
         private string fullName;
         private int longevity;
         private int maturity;
-        private byte shadeTolerance;
-        private byte fireTolerance;
         private int effectiveSeedDist;
         private int maxSeedDist;
         private float vegReprodProb;
@@ -56,24 +54,6 @@ namespace Landis.Species
         {
             get {
                 return maturity;
-            }
-        }
-
-        //---------------------------------------------------------------------
-
-        public byte ShadeTolerance
-        {
-            get {
-                return shadeTolerance;
-            }
-        }
-
-        //---------------------------------------------------------------------
-
-        public byte FireTolerance
-        {
-            get {
-                return fireTolerance;
             }
         }
 
@@ -137,8 +117,6 @@ namespace Landis.Species
                           string fullName,
                           int longevity,
                           int maturity,
-                          byte shadeTolerance,
-                          byte fireTolerance,
                           int effectiveSeedDist,
                           int maxSeedDist,
                           float vegReprodProb,
@@ -150,8 +128,6 @@ namespace Landis.Species
             this.fullName          = fullName;
             this.longevity         = longevity;
             this.maturity          = maturity;
-            this.shadeTolerance    = shadeTolerance;
-            this.fireTolerance     = fireTolerance;
             this.effectiveSeedDist = effectiveSeedDist;
             this.maxSeedDist       = maxSeedDist;
             this.vegReprodProb     = vegReprodProb;
@@ -168,8 +144,6 @@ namespace Landis.Species
             fullName          = string.IsNullOrEmpty(parameters.FullName) ? parameters.Name : parameters.FullName;
             longevity         = parameters.Longevity;
             maturity          = parameters.Maturity;
-            shadeTolerance    = parameters.ShadeTolerance;
-            fireTolerance     = parameters.FireTolerance;
             effectiveSeedDist = parameters.EffectiveSeedDist;
             maxSeedDist       = parameters.MaxSeedDist;
             vegReprodProb     = parameters.VegReprodProb;

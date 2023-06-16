@@ -55,28 +55,6 @@ namespace Landis.Species
         //---------------------------------------------------------------------
 
         /// <summary>
-        /// Shade tolerance class (1-5)
-        /// </summary>
-        InputValue<byte> ShadeTolerance
-        {
-            get;
-            set;
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
-        /// Fire tolerance class (1-5)
-        /// </summary>
-        InputValue<byte> FireTolerance
-        {
-            get;
-            set;
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
         /// Effective seed dispersal distance (m?)
         /// </summary>
         InputValue<int> EffectiveSeedDist

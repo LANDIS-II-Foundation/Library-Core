@@ -45,8 +45,6 @@ namespace Landis.Species
             InputVar<string> fullName = new InputVar<string>("Full Name");
             InputVar<int> longevity = new InputVar<int>("Longevity");
             InputVar<int> maturity = new InputVar<int>("Sexual Maturity");
-            InputVar<byte> shadeTolerance = new InputVar<byte>("Shade Tolerance");
-            InputVar<byte> fireTolerance = new InputVar<byte>("Fire Tolerance");
             InputVar<int> effectiveSeedDist = new InputVar<int>("Effective Seed Dist",
                                                                 EffectiveSeedDist.ReadMethod);
             InputVar<int> maxSeedDist = new InputVar<int>("Max Seed Dist");
@@ -76,12 +74,6 @@ namespace Landis.Species
 
                 ReadValue(maturity, currentLine);
                 parameters.Maturity = maturity.Value;
-
-                ReadValue(shadeTolerance, currentLine);
-                parameters.ShadeTolerance = shadeTolerance.Value;
-
-                ReadValue(fireTolerance, currentLine);
-                parameters.FireTolerance = fireTolerance.Value;
 
                 ReadValue(effectiveSeedDist, currentLine);
                 parameters.EffectiveSeedDist = effectiveSeedDist.Value;

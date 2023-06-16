@@ -14,8 +14,6 @@ namespace Landis.Species
         private InputValue<string> fullName;
         private InputValue<int> longevity;
         private InputValue<int> maturity;
-        private InputValue<byte> shadeTolerance;
-        private InputValue<byte> fireTolerance;
         private InputValue<int> effectiveSeedDist;
         private InputValue<int> maxSeedDist;
         private InputValue<float> vegReprodProb;
@@ -113,42 +111,6 @@ namespace Landis.Species
                                                       "Sexual maturity must be = or > 0. Species Name: " + name.ToString());
                 }
                 maturity = value;
-            }
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
-        /// Shade tolerance class (1-5)
-        /// </summary>
-        public InputValue<byte> ShadeTolerance
-        {
-            get {
-                return shadeTolerance;
-            }
-
-            set {
-                if (value != null)
-                    ValidateTolerance(value);
-                shadeTolerance = value;
-            }
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
-        /// Fire tolerance class (1-5)
-        /// </summary>
-        public InputValue<byte> FireTolerance
-        {
-            get {
-                return fireTolerance;
-            }
-
-            set {
-                if (value != null)
-                    ValidateTolerance(value);
-                fireTolerance = value;
             }
         }
 
@@ -324,7 +286,6 @@ namespace Landis.Species
             get {
                 object[] parameters = new object[]{
                     name, longevity, maturity,
-                    shadeTolerance, fireTolerance,
                     effectiveSeedDist, maxSeedDist,
                     vegReprodProb, minSproutAge, maxSproutAge, postFireRegen};
                 foreach (object parameter in parameters)
@@ -343,8 +304,6 @@ namespace Landis.Species
                                       fullName == null ? name.Actual : fullName.Actual,
                                       longevity.Actual,
                                       maturity.Actual,
-                                      shadeTolerance.Actual,
-                                      fireTolerance.Actual,
                                       effectiveSeedDist.Actual,
                                       maxSeedDist.Actual,
                                       vegReprodProb.Actual,

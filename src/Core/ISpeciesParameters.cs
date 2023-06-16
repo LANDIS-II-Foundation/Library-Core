@@ -46,26 +46,6 @@ namespace Landis.Core
         //---------------------------------------------------------------------
 
         /// <summary>
-        /// Shade tolerance class (1-5)
-        /// </summary>
-        byte ShadeTolerance
-        {
-            get;
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
-        /// Fire tolerance class (1-5)
-        /// </summary>
-        byte FireTolerance
-        {
-            get;
-        }
-
-        //---------------------------------------------------------------------
-
-        /// <summary>
         /// Effective seed dispersal distance (m?)
         /// </summary>
         int EffectiveSeedDist
