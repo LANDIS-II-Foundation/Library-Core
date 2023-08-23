@@ -43,10 +43,9 @@ namespace Landis.Ecoregions
         {
             if (disposed)
                 throw new System.InvalidOperationException("Object has been disposed.");
-            EcoregionPixel pixel = raster.BufferPixel;
-            raster.ReadBufferPixel();
+            EcoregionPixel pixel = raster.ReadPixel();
             pixelLocation = RowMajor.Next(pixelLocation, raster.Dimensions.Columns);
-            ushort mapCode = (ushort) pixel.MapCode.Value;
+            ushort mapCode = pixel.Band0;
             IEcoregion ecoregion = ecoregions.Find(mapCode);
             //Console.WriteLine("  reading in ecoregion {0} which is {1}", ecoregion.Name, ecoregion.Active);
             if (ecoregion != null)

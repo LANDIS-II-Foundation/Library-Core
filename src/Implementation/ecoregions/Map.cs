@@ -1,4 +1,5 @@
 using Landis.Core;
+using Landis.RasterIO;
 using Landis.SpatialModeling;
 using System;
 
@@ -9,7 +10,21 @@ namespace Landis.Ecoregions
         private string path;
         private IEcoregionDataset ecoregions;
         private IRasterFactory rasterFactory;
-        
+        private IMetadata metadata;
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
+        /// The metadata in the raster file that represents the map.
+        /// </summary>
+        public IMetadata Metadata
+        {
+            get
+            {
+                return metadata;
+            }
+        }
+
 
         //---------------------------------------------------------------------
 
@@ -39,7 +54,7 @@ namespace Landis.Ecoregions
                 IInputRaster<EcoregionPixel> map = rasterFactory.OpenRaster<EcoregionPixel>(path);
                 using (map)
                 {
-                    //this.metadata = map.Metadata;
+                    this.metadata = map.Metadata;
                 }
             }
             catch (Exception exc)
@@ -80,11 +95,10 @@ namespace Landis.Ecoregions
             Console.WriteLine("  reading in ecoregion from {0} ", path);
             using (map)
             {
-                EcoregionPixel pixel = map.BufferPixel;
                 foreach (Site site in landscape.AllSites)
                 {
-                    map.ReadBufferPixel();
-                    ushort mapCode = (ushort)pixel.MapCode.Value;
+                    EcoregionPixel pixel = map.ReadPixel();
+                    ushort mapCode = pixel.Band0;
                     if (site.IsActive)
                     {
                         siteVar[site] = ecoregions.Find(mapCode);

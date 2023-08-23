@@ -4,6 +4,7 @@
 //   Robert Scheller, North Carolina State University
 //   James Domingo, Green Code LLC
 
+using Landis.RasterIO;
 using Landis.SpatialModeling;
 using System.IO;
 using System.Collections.Generic;
