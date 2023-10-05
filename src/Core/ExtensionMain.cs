@@ -1,6 +1,6 @@
 //  Author: Jimm Domingo, UW-Madison, FLEL
-
 using Landis.Utilities;
+using System.Dynamic;
 
 namespace Landis.Core
 {
@@ -12,6 +12,7 @@ namespace Landis.Core
         private string name;
         private ExtensionType type;
         private int timestep;
+        public ExpandoObject additionalCohortParameters;
 
         //---------------------------------------------------------------------
 
@@ -121,6 +122,13 @@ namespace Landis.Core
         {
             // No-op !!!
         }
+
+        //---------------------------------------------------------------------
+
+        /// <summary>
+        /// Dynamically add new fields to universal cohorts
+        /// </summary>
+        public abstract void AddCohortData();
 
         //---------------------------------------------------------------------
     }
