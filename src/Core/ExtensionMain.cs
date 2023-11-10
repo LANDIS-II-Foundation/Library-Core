@@ -12,7 +12,7 @@ namespace Landis.Core
         private string name;
         private ExtensionType type;
         private int timestep;
-        public ExpandoObject additionalCohortParameters;
+        public static ExpandoObject additionalCohortParameters;
 
         //---------------------------------------------------------------------
 
@@ -24,6 +24,8 @@ namespace Landis.Core
         {
             this.name = name;
             this.type = type;
+            additionalCohortParameters = new ExpandoObject();
+            AddCohortData();
         }
 
         //---------------------------------------------------------------------
